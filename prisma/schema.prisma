@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MEMBER
+  ADMIN_SPACE
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  username    String       @db.VarChar(255)
+  password    String       @db.VarChar(255)
+  role        Role         @default(MEMBER)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  member      Member?
+  space_owner Space_owner?
+
+  @@map("users")
+}
+
+model Member {
+  id          Int      @id @default(autoincrement())
+  nama_member String   @db.VarChar(255)
+  Instansi    String   @db.VarChar(255)
+  alamat      String
+  telp        String   @db.VarChar(255)
+  id_user     Int      @unique
+  foto        String?  @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User        @relation(fields: [id_user], references: [id])
+  Reservasi Reservasi[]
+
+  @@map("members")
+}
+
+model Space_owner {
+  id             Int      @id @default(autoincrement())
+  nama_coworking String   @db.VarChar(255)
+  nama_pemilik   String   @db.VarChar(255)
+  telp           String   @db.VarChar(255)
+  id_user        Int      @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user      User       @relation(fields: [id_user], references: [id])
+  space     Space[]
+  reservasi Reservasi[]
+
+  @@map("space_owners")
+}
+
+enum Tipe {
+  DESK
+  MEETING_ROOM
+  PRIVATE_OFFICE
+}
+
+model Space {
+  id            Int      @id @default(autoincrement())
+  nama_space    String   @db.VarChar(255)
+  harga_per_jam Float
+  tipe          Tipe
+  kapasitas     Int
+  foto          String?  @db.VarChar(255)
+  deskripsi     String
+  id_owner      Int      
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner            Space_owner        @relation(fields: [id_owner], references: [id])
+  detail_reservasi detail_reservasi[]
+
+  @@map("spaces")
+}
+
+enum Status {
+  Belum_Dikonfirmasi
+  Disetujui
+  aktif
+  selesai
+  dibatalkan
+}
+
+model Reservasi {
+  id                Int      @id @default(autoincrement())
+  tanggal_reservasi DateTime
+  jam_mulai         DateTime
+  durasi_jam        Int
+  id_owner          Int      
+  id_member         Int      
+  status            Status
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  space_owner     Space_owner       @relation(fields: [id_owner], references: [id])
+  member          Member            @relation(fields: [id_member], references: [id])
+  detailReservasi detail_reservasi?
+}
+
+model detail_reservasi {
+  id           Int   @id @default(autoincrement())
+  id_reservasi Int   @unique
+  id_space     Int   
+  id_member    Int   
+  id_diskon    Int   @unique
+  total_harga  Float
+
+  reservasi Reservasi @relation(fields: [id_reservasi], references: [id])
+  diskon    Diskon?   @relation(fields: [id_diskon], references: [id])
+  space     Space?    @relation(fields: [id_space], references: [id])
+
+  @@map("detail_reservasis")
+}
+
+model Diskon {
+  id                Int               @id @default(autoincrement())
+  nama_diskkon      String            @db.VarChar(255)
+  presentase_diskon Float
+  tanggal_awal      DateTime
+  tanggal_akhir     DateTime
+  detailReservasi   detail_reservasi?
+
+  @@map("diskons")
+}
