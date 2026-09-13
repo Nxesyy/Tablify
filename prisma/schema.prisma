@@ -5,13 +5,13 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -58,7 +58,7 @@ model Space_owner {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  user      User       @relation(fields: [id_user], references: [id])
+  user      User        @relation(fields: [id_user], references: [id])
   space     Space[]
   reservasi Reservasi[]
 
@@ -79,7 +79,7 @@ model Space {
   kapasitas     Int
   foto          String?  @db.VarChar(255)
   deskripsi     String
-  id_owner      Int      
+  id_owner      Int
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -102,8 +102,8 @@ model Reservasi {
   tanggal_reservasi DateTime
   jam_mulai         DateTime
   durasi_jam        Int
-  id_owner          Int      
-  id_member         Int      
+  id_owner          Int
+  id_member         Int
   status            Status
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -116,8 +116,8 @@ model Reservasi {
 model detail_reservasi {
   id           Int   @id @default(autoincrement())
   id_reservasi Int   @unique
-  id_space     Int   
-  id_member    Int   
+  id_space     Int
+  id_member    Int
   id_diskon    Int   @unique
   total_harga  Float
 
