@@ -5,5 +5,6 @@ import { DiskonController } from './diskon.controller.js';
 @Module({
   controllers: [DiskonController],
   providers: [DiskonService],
+  exports: [DiskonService],
 })
 export class DiskonModule {}

@@ -1,20 +1,25 @@
-import { IsNotEmpty, IsNumber, IsStrongPassword } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsStrongPassword, Matches } from 'class-validator';
 
 export class registerAdminDto {
+  @IsNotEmpty({ message: 'Username wajib diisi' })
+  username: string;
 
-    @IsNotEmpty()
-    username: String;
+  @IsNotEmpty({ message: 'Password wajib diisi' })
+  @IsStrongPassword()
+  password: string;
 
-    @IsNotEmpty()
-    @IsStrongPassword()
-    password: String;
+  @IsNotEmpty({ message: 'Nama coworking wajib diisi' })
+  nama_coworking: string;
 
-    @IsNotEmpty()
-    nama_coworking:String
+  @IsNotEmpty({ message: 'Nama pemilik wajib diisi' })
+  nama_pemilik: string;
 
-    @IsNotEmpty()
-    nama_pemilik: String
+  @IsNotEmpty({ message: 'Nomor telepon wajib diisi' })
+  @IsString( { message: 'Nomor telepon harus berupa string (" ")' })
+  @Matches(/^[0-9]+$/, { message: 'Nomor telepon hanya boleh berisi angka'})
+  telp: string;
 
-    @IsNumber()
-    telp: Number
+  @IsOptional()
+  @IsString()
+  alamat?: string;
 }

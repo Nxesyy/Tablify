@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,7 +18,7 @@ enum Role {
 
 model User {
   id          Int          @id @default(autoincrement())
-  username    String       @db.VarChar(255)
+  username    String       @unique @db.VarChar(255)
   password    String       @db.VarChar(255)
   role        Role         @default(MEMBER)
   createdAt   DateTime     @default(now())
@@ -39,12 +36,14 @@ model Member {
   alamat      String
   telp        String   @db.VarChar(255)
   id_user     Int      @unique
-  foto        String?  @db.VarChar(255)
+  foto        String?  @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user      User        @relation(fields: [id_user], references: [id])
-  Reservasi Reservasi[]
+  user             User               @relation(fields: [id_user], references: [id])
+  Reservasi        Reservasi[]
+  detailReservasis detail_reservasi[]
+  reviews          Review[]
 
   @@map("members")
 }
@@ -52,8 +51,9 @@ model Member {
 model Space_owner {
   id             Int      @id @default(autoincrement())
   nama_coworking String   @db.VarChar(255)
-  nama_pemilik   String   @db.VarChar(255)
+  nama_pemilik   String   @db.VarChar(255)   
   telp           String   @db.VarChar(255)
+  alamat         String?  @db.Text
   id_user        Int      @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -61,6 +61,7 @@ model Space_owner {
   user      User        @relation(fields: [id_user], references: [id])
   space     Space[]
   reservasi Reservasi[]
+  diskons   Diskon[]
 
   @@map("space_owners")
 }
@@ -77,7 +78,7 @@ model Space {
   harga_per_jam Float
   tipe          Tipe
   kapasitas     Int
-  foto          String?  @db.VarChar(255)
+  foto          String?  @db.Text
   deskripsi     String
   id_owner      Int
   createdAt     DateTime @default(now())
@@ -85,6 +86,7 @@ model Space {
 
   owner            Space_owner        @relation(fields: [id_owner], references: [id])
   detail_reservasi detail_reservasi[]
+  reviews          Review[]
 
   @@map("spaces")
 }
@@ -98,30 +100,40 @@ enum Status {
 }
 
 model Reservasi {
-  id                Int      @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
+  kode_tiket        String?   @unique @db.VarChar(50)
   tanggal_reservasi DateTime
   jam_mulai         DateTime
+  jam_selesai       DateTime?
   durasi_jam        Int
   id_owner          Int
   id_member         Int
-  status            Status
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  status            Status    @default(Belum_Dikonfirmasi)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   space_owner     Space_owner       @relation(fields: [id_owner], references: [id])
   member          Member            @relation(fields: [id_member], references: [id])
   detailReservasi detail_reservasi?
+  review          Review?
+
+  @@map("reservasis")
 }
 
 model detail_reservasi {
-  id           Int   @id @default(autoincrement())
-  id_reservasi Int   @unique
-  id_space     Int
-  id_member    Int
-  id_diskon    Int   @unique
-  total_harga  Float
+  id            Int    @id @default(autoincrement())
+  id_reservasi  Int    @unique
+  id_space      Int
+  id_member     Int
+  id_diskon     Int?
+  tarif_per_jam Float?
+  total_jam     Int?
+  subtotal      Float?
+  potongan      Float? @default(0)
+  total_harga   Float
 
-  reservasi Reservasi @relation(fields: [id_reservasi], references: [id])
+  reservasi Reservasi @relation(fields: [id_reservasi], references: [id], onDelete: Cascade)
+  member    Member    @relation(fields: [id_member], references: [id])
   diskon    Diskon?   @relation(fields: [id_diskon], references: [id])
   space     Space?    @relation(fields: [id_space], references: [id])
 
@@ -130,11 +142,31 @@ model detail_reservasi {
 
 model Diskon {
   id                Int               @id @default(autoincrement())
+  kode_diskon       String?           @db.VarChar(50)
   nama_diskkon      String            @db.VarChar(255)
   presentase_diskon Float
   tanggal_awal      DateTime
   tanggal_akhir     DateTime
-  detailReservasi   detail_reservasi?
+  id_owner          Int?
+  owner             Space_owner?      @relation(fields: [id_owner], references: [id])
+  detailReservasis  detail_reservasi[]
 
   @@map("diskons")
+}
+
+model Review {
+  id           Int        @id @default(autoincrement())
+  id_space     Int
+  id_member    Int
+  id_reservasi Int        @unique
+  rating       Int
+  komentar     String     @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  space        Space      @relation(fields: [id_space], references: [id], onDelete: Cascade)
+  member       Member     @relation(fields: [id_member], references: [id], onDelete: Cascade)
+  reservasi    Reservasi  @relation(fields: [id_reservasi], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
 }

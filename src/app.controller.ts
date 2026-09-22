@@ -5,8 +5,21 @@ import { AppService } from './app.service.js';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  /**
+   * Root endpoint: Status API dan Petunjuk Penggunaan
+   * GET /
+   */
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getApiInfo() {
+    return this.appService.getApiInfo();
+  }
+
+  /**
+   * Health check endpoint: Status kesehatan server & database
+   * GET /health
+   */
+  @Get('health')
+  getHealth() {
+    return this.appService.getHealth();
   }
 }

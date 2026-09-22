@@ -1,34 +1,53 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service.js';
-import { CreateUploadDto } from './dto/create-upload.dto.js';
-import { UpdateUploadDto } from './dto/update-upload.dto.js';
+import type { UploadedFileType } from './upload.service.js';
 
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  @Post()
-  create(@Body() createUploadDto: CreateUploadDto) {
-    return this.uploadService.create(createUploadDto);
+  /**
+   * 1. Upload Berkas Gambar Umum (PDF No 48: POST /api/upload/image)
+   */
+  @Post('image')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 15 * 1024 * 1024 },
+    }),
+  )
+  uploadImage(@UploadedFile() file: UploadedFileType) {
+    return this.uploadService.uploadFile(file);
   }
 
-  @Get()
-  findAll() {
-    return this.uploadService.findAll();
+  /**
+   * 2. Upload Foto Ruangan / Space (PDF No 49: POST /api/upload/spaces)
+   */
+  @Post('spaces')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 15 * 1024 * 1024 },
+    }),
+  )
+  uploadSpaces(@UploadedFile() file: UploadedFileType) {
+    return this.uploadService.uploadFile(file);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.uploadService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUploadDto: UpdateUploadDto) {
-    return this.uploadService.update(+id, updateUploadDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.uploadService.remove(+id);
+  /**
+   * 3. Upload Foto Profil Member (PDF No 50: POST /api/upload/members)
+   */
+  @Post('members')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 15 * 1024 * 1024 },
+    }),
+  )
+  uploadMembers(@UploadedFile() file: UploadedFileType) {
+    return this.uploadService.uploadFile(file);
   }
 }

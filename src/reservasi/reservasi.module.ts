@@ -5,5 +5,6 @@ import { ReservasiController } from './reservasi.controller.js';
 @Module({
   controllers: [ReservasiController],
   providers: [ReservasiService],
+  exports: [ReservasiService],
 })
 export class ReservasiModule {}

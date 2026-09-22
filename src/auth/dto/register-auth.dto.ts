@@ -1,21 +1,32 @@
-import { IsEmail, IsNotEmpty, IsStrongPassword } from "class-validator";
-
-
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class RegisterAuthDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-    @IsNotEmpty()
-    name: string;
+  @IsOptional()
+  @IsString()
+  nama_member?: string;
 
-    @IsNotEmpty()
-    username: string;
+  @IsNotEmpty({ message: 'Username wajib diisi' })
+  username: string;
 
-    @IsNotEmpty()
-    @IsEmail()
-    email: string;
+  @IsNotEmpty({ message: 'Password wajib diisi' })
+  password: string;
 
-    @IsNotEmpty()
-    @IsStrongPassword()
-    password: string;
+  @IsOptional()
+  @IsString()
+  Instansi?: string;
 
+  @IsOptional()
+  @IsString()
+  alamat?: string;
+
+  @IsOptional()
+  @IsString()
+  foto?: string;
+
+  @IsOptional()
+  telp?: string | number;
 }
